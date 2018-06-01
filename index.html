@@ -13,7 +13,7 @@
         body { margin:0; padding:0; }
         #map { position:absolute; top:50px; bottom:0; width:100%; }
         #button{position:relative;float: left; width: 300px; height:25px; background: #ff0000}
-        svg{position:absolute; top:50px; bottom:0; left:0; width:100%;}
+        svg{position:absolute; top:50px; bottom:0; left:0; width:100%;pointer-events: none;}
     </style>
 </head>
 <body>
@@ -24,6 +24,12 @@
 <svg></svg>
 
 <script>
+var svg = d3.select("svg")
+
+svg.attr("width", window.innerWidth)
+.attr("height", window.innerHeight);
+
+
 mapboxgl.accessToken = 'pk.eyJ1IjoiZ3VhcmRpYW4iLCJhIjoiNHk1bnF4OCJ9.25tK75EuDdgq5GxQKyD6Fg';
 var map = new mapboxgl.Map({
     container: 'map',
@@ -1217,7 +1223,7 @@ map.on('load', function () {
         'type': 'fill',
         'source': {
             'type': 'geojson',
-            'data': 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_urban_areas.geojson'
+            'data': 'ne_10m_admin_0_countries.json'
         },
         'layout': {},
         "paint": {
@@ -1225,12 +1231,6 @@ map.on('load', function () {
             }
     }, firstSymbolId);
 });
-
-
-var svg = d3.select("svg")
-
-svg.attr("width", "100%")
-.attr("height", "100%");
 
  let map_raw =
     {
@@ -1260,15 +1260,17 @@ function projectPoint(lon, lat) {
 
 function getRenderedFeatures()
 {
-    let query = map.queryRenderedFeatures([[0, 0], [800, 800]]).reverse();
+    let query = map.queryRenderedFeatures([[0, 0], [window.innerWidth, window.innerHeight]]).reverse();
     let json = JSON.stringify(query, null, 2);
     let text = JSON.parse(json);
+
+    console.log(text)
 
     var highlighted = text.filter(function(d){return d.layer.id == "highlighted-territory"});
 
     highlighted.forEach(function(d){map_raw.features.push(d)})
 
-    console.log(highlighted)
+    svg.selectAll('paths').remove()
 
     svg.selectAll('paths')
       .data(map_raw.features)
